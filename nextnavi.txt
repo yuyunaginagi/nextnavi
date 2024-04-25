@@ -1,0 +1,66 @@
+'VBAによる自動メール送信
+Sub ZangyouKanri()
+    'Outlookアプリケーションを取得するための変数宣言
+     Dim objOutlooki As Outlook.Application
+    'メール内容②というシートの変数宣言
+    Dim wsMail As Worksheet
+    '従業員残業状況確認シートというシートの変数宣言
+    Dim wsZangyou As Worksheet
+    '従業員リストの数を取得するための変数宣言
+    Dim rowMax As Long
+    'For文で使用するための変数宣言
+    Dim i As Long
+    'MailItemを取得するための変数宣言
+    Dim mail As Outlook.MailItem
+    '本文を取得するための変数宣言
+    Dim Body As String
+    '残業時間を取得するための変数宣言
+    Dim overtimeHours As Integer
+     
+    'Outlookアプリケーションの取得
+    Set objOutlook = New Outlook.Application
+    'メール内容②というシートを取得
+    Set wsMail = ThisWorkbook.Sheets("メール内容②")
+    '従業員残業状況確認シートというシートを取得
+    Set wsZangyou = ThisWorkbook.Sheets("従業員残業状況確認シート")
+    
+    '従業員残業状況確認シートのリストに記載している人数のカウント
+    rowMax = wsZangyou.Cells(Rows.Count, 1).End(xlUp).Row
+    'For文を活用し、2から最終行までを繰り返し処理を行う。
+    For i = 2 To rowMax
+        '残業時間の取得
+        overtimeHours = wsZangyou.Cells(i, 4).Value
+
+        '残業時間が「45時間以上」の場合
+        If overtimeHours >= 45 Then
+            Body = Replace(wsMail.Range("B4").Value, "＜名前＞", wsZangyou.Cells(i, 2).Value)
+        '残業時間が「45時間以上」ではなく、「35時間以上」の場合
+        ElseIf overtimeHours >= 35 Then
+            Body = Replace(wsMail.Range("B2").Value, "＜名前＞", wsZangyou.Cells(i, 2).Value)
+        '「45時間以上」でも「35時間以上」でもない場合
+        Else
+            GoTo Continue
+        End If
+        
+        
+        '＜従業員番号＞を書き換え
+        Body = Replace(Body, "＜従業員番号＞", wsZangyou.Cells(i, 1).Value)
+        '＜残業時間＞を書き換え
+        Body = Replace(Body, "＜残業時間＞", wsZangyou.Cells(i, 4).Value)
+        'MailItemの取得
+        Set mail = objOutlook.CreateItem(olMailItem)
+        'メール宛先取得
+        mail.To = wsZangyou.Cells(i, 3).Value
+        'メールタイトル取得
+        mail.Subject = wsMail.Range("B1").Value
+        'メールフォーマットの指定
+        mail.BodyFormat = olFormatPlain
+        'メール本文取得
+        mail.Body = Body
+        'メールのプレビューを表示
+        mail.Display
+        
+Continue:
+    'For文の終わりを示す
+    Next i
+End Sub
