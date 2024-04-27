@@ -27,3 +27,14 @@ class Main {
     System.out.println(scores.get(3));
   }
 }
+
+// 条件文
+class Main {
+  public static void main(String[] args) {
+    int value = 3;
+
+    if (value > 0){
+      System.out.println("値は正です");
+    }
+  }
+}
